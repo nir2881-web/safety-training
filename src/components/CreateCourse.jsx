@@ -68,7 +68,7 @@ export default function CreateCourse() {
         passingScore: aiResult.passingScore || 5,
       }
 
-      saveCourse(course)
+      await saveCourse(course)
       setCreatedCourse(course)
     } catch (err) {
       setError(err.message || 'שגיאה ביצירת הלומדה. נסה שוב.')

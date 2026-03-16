@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from './Header'
-import { getCourses, deleteCourse, saveCourse, getCompletionsByCourse, getCompletions } from '../utils/storage'
+import { getCourses, deleteCourse, saveCourse, getCompletions } from '../utils/storage'
 import { exportCourseReport, exportAllReport } from '../utils/excelExport'
 
 function EditModal({ course, onSave, onClose }) {
@@ -89,12 +89,19 @@ function DeleteConfirm({ courseName, onConfirm, onClose }) {
 export default function AdminPanel() {
   const navigate = useNavigate()
   const [courses, setCourses] = useState([])
+  const [completions, setCompletions] = useState([])
   const [copiedId, setCopiedId] = useState(null)
   const [editingCourse, setEditingCourse] = useState(null)
   const [deletingCourse, setDeletingCourse] = useState(null)
 
+  const loadData = async () => {
+    const [c, comp] = await Promise.all([getCourses(), getCompletions()])
+    setCourses(c)
+    setCompletions(comp)
+  }
+
   useEffect(() => {
-    setCourses(getCourses())
+    loadData()
   }, [])
 
   const getCourseUrl = id => `${window.location.origin}/course/${id}`
@@ -109,30 +116,29 @@ export default function AdminPanel() {
     }
   }
 
-  const handleSaveEdit = (updatedCourse) => {
-    saveCourse(updatedCourse)
-    setCourses(getCourses())
+  const handleSaveEdit = async (updatedCourse) => {
+    await saveCourse(updatedCourse)
+    await loadData()
     setEditingCourse(null)
   }
 
-  const handleDelete = (course) => {
-    deleteCourse(course.id)
-    setCourses(getCourses())
+  const handleDelete = async (course) => {
+    await deleteCourse(course.id)
+    await loadData()
     setDeletingCourse(null)
   }
 
   const handleExcel = (course) => {
-    const completions = getCompletionsByCourse(course.id)
-    exportCourseReport(course, completions)
+    const courseCompletions = completions.filter(c => c.courseId === course.id)
+    exportCourseReport(course, courseCompletions)
   }
 
   const handleExportAll = () => {
-    const allCompletions = getCompletions()
-    exportAllReport(courses, allCompletions)
+    exportAllReport(courses, completions)
   }
 
   const getCompletionCount = (courseId) => {
-    return getCompletionsByCourse(courseId).filter(c => c.passed).length
+    return completions.filter(c => c.courseId === courseId && c.passed).length
   }
 
   const formatDate = (iso) => {
@@ -168,7 +174,7 @@ export default function AdminPanel() {
           <div>
             <h1 className="text-2xl font-bold text-dark">לומדות קיימות</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              {courses.length} לומדות · {getCompletions().length} השלמות סה"כ
+              {courses.length} לומדות · {completions.length} השלמות סה"כ
             </p>
           </div>
           <div className="flex gap-2">

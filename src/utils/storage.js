@@ -1,54 +1,60 @@
-const COURSES_KEY = 'lms_courses'
-const COMPLETIONS_KEY = 'lms_completions'
+import {
+  collection,
+  doc,
+  getDocs,
+  getDoc,
+  setDoc,
+  deleteDoc,
+  addDoc,
+  query,
+  where,
+  orderBy,
+} from 'firebase/firestore'
+import { db } from '../firebase'
+
 const API_KEY_STORE = 'anthropic_api_key'
 
-export function getCourses() {
-  try {
-    return JSON.parse(localStorage.getItem(COURSES_KEY) || '[]')
-  } catch {
-    return []
-  }
+// ── Courses ──────────────────────────────────────────────────────────────────
+
+export async function getCourses() {
+  const q = query(collection(db, 'courses'), orderBy('createdAt', 'desc'))
+  const snap = await getDocs(q)
+  return snap.docs.map(d => d.data())
 }
 
-export function getCourseById(id) {
-  return getCourses().find(c => c.id === id) || null
+export async function getCourseById(id) {
+  const snap = await getDoc(doc(db, 'courses', id))
+  return snap.exists() ? snap.data() : null
 }
 
-export function saveCourse(course) {
-  const courses = getCourses()
-  const idx = courses.findIndex(c => c.id === course.id)
-  if (idx >= 0) {
-    courses[idx] = course
-  } else {
-    courses.unshift(course)
-  }
-  localStorage.setItem(COURSES_KEY, JSON.stringify(courses))
+export async function saveCourse(course) {
+  await setDoc(doc(db, 'courses', course.id), course)
 }
 
-export function deleteCourse(id) {
-  const courses = getCourses().filter(c => c.id !== id)
-  localStorage.setItem(COURSES_KEY, JSON.stringify(courses))
-  const completions = getCompletions().filter(c => c.courseId !== id)
-  localStorage.setItem(COMPLETIONS_KEY, JSON.stringify(completions))
+export async function deleteCourse(id) {
+  await deleteDoc(doc(db, 'courses', id))
+  const snap = await getDocs(query(collection(db, 'completions'), where('courseId', '==', id)))
+  await Promise.all(snap.docs.map(d => deleteDoc(d.ref)))
 }
 
-export function getCompletions() {
-  try {
-    return JSON.parse(localStorage.getItem(COMPLETIONS_KEY) || '[]')
-  } catch {
-    return []
-  }
+// ── Completions ──────────────────────────────────────────────────────────────
+
+export async function getCompletions() {
+  const snap = await getDocs(collection(db, 'completions'))
+  return snap.docs.map(d => d.data())
 }
 
-export function getCompletionsByCourse(courseId) {
-  return getCompletions().filter(c => c.courseId === courseId)
+export async function getCompletionsByCourse(courseId) {
+  const q = query(collection(db, 'completions'), where('courseId', '==', courseId))
+  const snap = await getDocs(q)
+  return snap.docs.map(d => d.data())
 }
 
-export function saveCompletion(completion) {
-  const completions = getCompletions()
-  completions.push(completion)
-  localStorage.setItem(COMPLETIONS_KEY, JSON.stringify(completions))
+export async function saveCompletion(completion) {
+  await addDoc(collection(db, 'completions'), completion)
 }
+
+// ── API Key (stays in localStorage — never sent to server) ───────────────────
 
 export function getApiKey() {
   return localStorage.getItem(API_KEY_STORE) || ''

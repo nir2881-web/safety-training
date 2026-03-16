@@ -340,13 +340,14 @@ export default function CoursePlayer() {
   const [score, setScore] = useState(null)
 
   useEffect(() => {
-    const found = getCourseById(id)
-    found ? setCourse(found) : setNotFound(true)
+    getCourseById(id).then(found => {
+      found ? setCourse(found) : setNotFound(true)
+    })
   }, [id])
 
-  const handleQuizSubmit = finalScore => {
+  const handleQuizSubmit = async finalScore => {
     const passed = finalScore >= (course.passingScore || 5)
-    saveCompletion({
+    await saveCompletion({
       id: uuidv4(),
       courseId: id,
       name: userInfo.name,
