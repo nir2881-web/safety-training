@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Arial, sans-serif; margin: 40px; direction: rtl; }
+  h1 { color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 5px; }
+  h2 { color: #34495e; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+  td, th { border: 1px solid #ccc; padding: 8px; text-align: right; }
+  th { background-color: #2c3e50; color: white; }
+  tr:nth-child(even) { background-color: #f2f2f2; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: Courier New; }
+  .code-block { background: #f4f4f4; padding: 10px; border-right: 4px solid #2c3e50; margin: 10px 0; font-family: Courier New; direction: ltr; text-align: left; }
+  .done { color: green; }
+  .todo { color: #e67e22; }
+  .warning { color: red; }
+</style>
+</head>
+<body>
+
+<h1>SafetyOn LMS - תיעוד הפרויקט</h1>
+<p><strong>תאריך:</strong> 17/03/2026</p>
+
+<hr>
+
+<h1>1. מה בנינו</h1>
+<p>אפליקציית LMS (Learning Management System) לניהול הכשרות בטיחות לעובדים.</p>
+<p><strong>שם הפרויקט:</strong> SafetyOn LMS</p>
+
+<h2>טכנולוגיות:</h2>
+<ul>
+  <li>React + Vite - הפרונטאנד</li>
+  <li>Tailwind CSS - עיצוב</li>
+  <li>Firebase Firestore - בסיס נתונים בענן</li>
+  <li>Firebase Hosting - אחסון ופרסום האתר</li>
+</ul>
+
+<hr>
+
+<h1>2. היכן הדברים</h1>
+<table>
+  <tr><th>מה</th><th>היכן</th></tr>
+  <tr><td>קוד המקור (GitHub)</td><td>branch: claude/safetyon-lms-app-SChpA</td></tr>
+  <tr><td>האתר החי</td><td>https://safetyon-lms.web.app</td></tr>
+  <tr><td>Firebase Console</td><td>https://console.firebase.google.com/project/safetyon-lms/overview</td></tr>
+  <tr><td>תיקייה מקומית (Windows)</td><td>C:\Users\ndavidov\safety-training\safety-training-claude-safetyon-lms-app-SChpA</td></tr>
+</table>
+
+<hr>
+
+<h1>3. מבנה הקוד</h1>
+<ul>
+  <li><code>src/App.jsx</code> - הקומפוננטה הראשית</li>
+  <li><code>src/firebase.js</code> - חיבור ל-Firebase</li>
+  <li><code>src/main.jsx</code> - נקודת הכניסה</li>
+  <li><code>src/components/</code> - כל הקומפוננטות</li>
+  <li><code>src/utils/</code> - פונקציות עזר</li>
+  <li><code>src/index.css</code> - סגנונות</li>
+</ul>
+
+<hr>
+
+<h1>4. מה הושלם</h1>
+<ul>
+  <li class="done">✅ אפליקציה React מלאה עם Vite</li>
+  <li class="done">✅ Firebase Firestore - בסיס נתונים בענן</li>
+  <li class="done">✅ Firebase Hosting - האתר פרוס ופעיל</li>
+  <li class="done">✅ npm run build - בנייה לייצור</li>
+  <li class="done">✅ firebase deploy - פריסה לאינטרנט</li>
+  <li class="done">✅ קוד מועלה ל-GitHub</li>
+</ul>
+
+<hr>
+
+<h1>5. מה חסר / צעדים הבאים</h1>
+<ul>
+  <li class="warning">⚠️ להעלות firebase.json ו-.firebaserc ל-GitHub (ראה פקודות למטה)</li>
+  <li class="todo">🔲 Authentication - כניסת משתמשים (Firebase Auth)</li>
+  <li class="todo">🔲 Firebase Storage - העלאת קבצים/וידאו</li>
+  <li class="todo">🔲 ממשק ניהול למנהל מערכת</li>
+  <li class="todo">🔲 דוחות ומעקב התקדמות עובדים</li>
+</ul>
+
+<hr>
+
+<h1>6. פקודות חשובות</h1>
+
+<h2>לפריסה מחדש (אחרי כל שינוי בקוד):</h2>
+<div class="code-block">
+npm run build<br>
+firebase deploy
+</div>
+
+<h2>להעלות קבצי Firebase ל-GitHub (פעם אחת!):</h2>
+<div class="code-block">
+git add firebase.json .firebaserc<br>
+git commit -m "Add Firebase hosting configuration"<br>
+git push -u origin claude/safetyon-lms-app-SChpA
+</div>
+
+<h2>להריץ לוקאלית:</h2>
+<div class="code-block">
+npm install<br>
+npm run dev
+</div>
+
+<hr>
+
+<h1>7. Firebase - פרטים</h1>
+<ul>
+  <li><strong>Project ID:</strong> safetyon-lms</li>
+  <li><strong>Hosting URL:</strong> https://safetyon-lms.web.app</li>
+  <li><strong>תיקיית build:</strong> dist/</li>
+  <li><strong>הגדרות:</strong> SPA - כל הנתיבים מפנים ל-index.html</li>
+</ul>
+
+<hr>
+
+<h1>8. הערות חשובות</h1>
+<ul>
+  <li class="warning">⚠️ קובץ <code>.env</code> מכיל מפתחות Firebase - לא להעלות ל-GitHub!</li>
+  <li>node_modules/ ו-dist/ לא מועלים ל-GitHub (מוגדר ב-.gitignore)</li>
+  <li>אחרי כל שינוי בקוד: <code>npm run build</code> ואז <code>firebase deploy</code></li>
+  <li>ה-branch הפעיל: <code>claude/safetyon-lms-app-SChpA</code></li>
+</ul>
+
+</body>
+</html>
