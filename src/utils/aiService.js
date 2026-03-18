@@ -10,32 +10,7 @@ const SYSTEM_PROMPT = `אתה מומחה להכשרות בטיחות בעבוד�
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages'
 const MODEL = 'claude-sonnet-4-6'
 
-export async function generateCourse(apiKey, fileData) {
-  let messages
-
-  if (fileData && fileData.isPdf) {
-    messages = [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'document',
-            source: { type: 'base64', media_type: 'application/pdf', data: fileData.base64 },
-          },
-          { type: 'text', text: 'צור לומדת בטיחות קצרה מהנוהל הזה.' },
-        ],
-      },
-    ]
-  } else {
-    const text = typeof fileData === 'string' ? fileData : ''
-    messages = [
-      {
-        role: 'user',
-        content: `נוהל הבטיחות:\n\n${text.substring(0, 20000)}\n\nצור לומדת בטיחות קצרה מהנוהל הזה.`,
-      },
-    ]
-  }
-
+async function callApi(apiKey, messages) {
   let response
   try {
     response = await fetch(ANTHROPIC_URL, {
@@ -67,7 +42,9 @@ export async function generateCourse(apiKey, fileData) {
       throw new Error('חרגת ממגבלת הבקשות. המתן מספר שניות ונסה שוב.')
     }
     if (response.status === 504 || response.status === 502 || response.status === 503) {
-      throw new Error('הקובץ גדול מדי לעיבוד. נסה קובץ קטן יותר או המתן מספר שניות ונסה שוב.')
+      const retryErr = new Error('שרת Anthropic לא זמין כרגע. מנסה שוב...')
+      retryErr.isRetryable = true
+      throw retryErr
     }
     throw new Error(err.error?.message || `שגיאת API: ${response.status}`)
   }
@@ -102,6 +79,54 @@ export async function generateCourse(apiKey, fileData) {
         if (e.message !== 'שגיאת API' && !e.message.includes('מפתח')) continue
         throw e
       }
+    }
+  }
+
+  return raw
+}
+
+export async function generateCourse(apiKey, fileData) {
+  let messages
+
+  if (fileData && fileData.isPdf) {
+    messages = [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'document',
+            source: { type: 'base64', media_type: 'application/pdf', data: fileData.base64 },
+          },
+          { type: 'text', text: 'צור לומדת בטיחות קצרה מהנוהל הזה.' },
+        ],
+      },
+    ]
+  } else {
+    const text = typeof fileData === 'string' ? fileData : ''
+    messages = [
+      {
+        role: 'user',
+        content: `נוהל הבטיחות:\n\n${text.substring(0, 20000)}\n\nצור לומדת בטיחות קצרה מהנוהל הזה.`,
+      },
+    ]
+  }
+
+  // Retry up to 2 times on 504/502/503
+  let raw
+  const maxAttempts = 3
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      raw = await callApi(apiKey, messages)
+      break
+    } catch (e) {
+      if (e.isRetryable && attempt < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, attempt * 2000))
+        continue
+      }
+      if (e.isRetryable) {
+        throw new Error('שרת Anthropic לא זמין. נסה שוב בעוד מספר שניות.')
+      }
+      throw e
     }
   }
 
