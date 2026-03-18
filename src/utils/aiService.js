@@ -13,7 +13,7 @@ const MODEL = 'claude-sonnet-4-6'
 async function callApi(apiKey, messages) {
   let response
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 30000)
+  const timeoutId = setTimeout(() => controller.abort(), 90000)
   try {
     response = await fetch(ANTHROPIC_URL, {
       method: 'POST',
@@ -29,7 +29,6 @@ async function callApi(apiKey, messages) {
         max_tokens: 2048,
         system: SYSTEM_PROMPT,
         messages,
-        stream: true,
       }),
     })
   } catch (e) {
@@ -59,40 +58,8 @@ async function callApi(apiKey, messages) {
     throw new Error(err.error?.message || `שגיאת API: ${response.status}`)
   }
 
-  // Read streaming SSE response
-  const reader = response.body.getReader()
-  const decoder = new TextDecoder()
-  let buffer = ''
-  let raw = ''
-
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split('\n')
-    buffer = lines.pop()
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue
-      const data = line.slice(6).trim()
-      if (!data || data === '[DONE]') continue
-      try {
-        const event = JSON.parse(data)
-        if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-          raw += event.delta.text
-        }
-        if (event.type === 'error') {
-          const msg = event.error?.message || 'שגיאת API'
-          if (event.error?.type === 'authentication_error') throw new Error('מפתח API שגוי.')
-          throw new Error(msg)
-        }
-      } catch (e) {
-        if (e.message !== 'שגיאת API' && !e.message.includes('מפתח')) continue
-        throw e
-      }
-    }
-  }
-
-  return raw
+  const data = await response.json()
+  return data.content?.[0]?.text ?? ''
 }
 
 export async function generateCourse(apiKey, fileData) {
