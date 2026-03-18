@@ -31,7 +31,7 @@ export async function generateCourse(apiKey, fileData) {
     messages = [
       {
         role: 'user',
-        content: `נוהל הבטיחות:\n\n${text.substring(0, 8000)}\n\nצור לומדת בטיחות קצרה מהנוהל הזה.`,
+        content: `נוהל הבטיחות:\n\n${text.substring(0, 20000)}\n\nצור לומדת בטיחות קצרה מהנוהל הזה.`,
       },
     ]
   }
