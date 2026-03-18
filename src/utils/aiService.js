@@ -1,24 +1,11 @@
-const SYSTEM_PROMPT = `אתה מומחה להכשרות בטיחות בעבודה. קיבלת את הטקסט הבא שחולץ מקובץ הדרכה.
-המשימה:
-1. חלק את התוכן ל-4 עד 6 פרקים קצרים וברורים בעברית. כל פרק: כותרת + 3-5 משפטים.
-2. צור 7 שאלות הבנה אמריקאי (4 תשובות, אחת נכונה). השאלות יבחנו הבנה, לא שינון.
-3. ציון מעבר: 70% (5 מתוך 7).
+const SYSTEM_PROMPT = `אתה מומחה להכשרות בטיחות בעבודה.
+המשימה: צור לומדת בטיחות קצרה וממוקדת מהנוהל שקיבלת.
+1. חלק ל-3 עד 4 פרקים קצרים. כל פרק: כותרת + 2-3 משפטים בלבד.
+2. צור 5 שאלות הבנה (4 תשובות, אחת נכונה).
+3. ציון מעבר: 70% (4 מתוך 5).
 
-החזר JSON בלבד, ללא טקסט נוסף:
-{
-  "sections": [
-    {"title": "כותרת הפרק", "content": "תוכן הפרק"}
-  ],
-  "questions": [
-    {
-      "question": "טקסט השאלה",
-      "options": ["תשובה א", "תשובה ב", "תשובה ג", "תשובה ד"],
-      "correct": 0,
-      "explanation": "הסבר קצר לתשובה הנכונה"
-    }
-  ],
-  "passingScore": 5
-}`
+החזר JSON בלבד:
+{"sections":[{"title":"כותרת","content":"תוכן"}],"questions":[{"question":"שאלה","options":["א","ב","ג","ד"],"correct":0,"explanation":"הסבר"}],"passingScore":4}`
 
 const PROXY_URL = '/api/generate'
 const MODEL = 'claude-sonnet-4-6'
@@ -48,7 +35,7 @@ export async function generateCourse(apiKey, fileData) {
     messages = [
       {
         role: 'user',
-        content: `נוהל הבטיחות:\n\n${text.substring(0, 15000)}\n\nצור לומדת בטיחות מקצועית מהנוהל הזה.`,
+        content: `נוהל הבטיחות:\n\n${text.substring(0, 8000)}\n\nצור לומדת בטיחות קצרה מהנוהל הזה.`,
       },
     ]
   }
@@ -62,7 +49,7 @@ export async function generateCourse(apiKey, fileData) {
         apiKey,
         body: {
           model: MODEL,
-          max_tokens: 4096,
+          max_tokens: 2048,
           system: SYSTEM_PROMPT,
           messages,
         },
@@ -136,7 +123,7 @@ export async function generateCourse(apiKey, fileData) {
   if (!result.sections || !Array.isArray(result.sections) || result.sections.length === 0) {
     throw new Error('לא נוצרו פרקים. נסה שוב עם קובץ אחר.')
   }
-  if (!result.questions || !Array.isArray(result.questions) || result.questions.length === 0) {
+  if (!result.questions || !Array.isArray(result.questions) || result.questions.length < 3) {
     throw new Error('לא נוצרו שאלות. נסה שוב.')
   }
 
