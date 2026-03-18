@@ -53,21 +53,26 @@ export async function generateCourse(apiKey, fileData) {
     ]
   }
 
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 8192,
-      system: SYSTEM_PROMPT,
-      messages,
-    }),
-  })
+  let response
+  try {
+    response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 8192,
+        system: SYSTEM_PROMPT,
+        messages,
+      }),
+    })
+  } catch {
+    throw new Error('לא ניתן להתחבר ל-Anthropic API. ודא שאתה מחובר לאינטרנט ושהגישה לאתר api.anthropic.com אינה חסומה.')
+  }
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
