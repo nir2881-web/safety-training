@@ -62,7 +62,7 @@ export async function generateCourse(apiKey, fileData) {
         apiKey,
         body: {
           model: MODEL,
-          max_tokens: 8192,
+          max_tokens: 4096,
           system: SYSTEM_PROMPT,
           messages,
         },
