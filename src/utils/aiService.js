@@ -66,6 +66,9 @@ export async function generateCourse(apiKey, fileData) {
     if (response.status === 429) {
       throw new Error('חרגת ממגבלת הבקשות. המתן מספר שניות ונסה שוב.')
     }
+    if (response.status === 504 || response.status === 502 || response.status === 503) {
+      throw new Error('הקובץ גדול מדי לעיבוד. נסה קובץ קטן יותר או המתן מספר שניות ונסה שוב.')
+    }
     throw new Error(err.error?.message || `שגיאת API: ${response.status}`)
   }
 

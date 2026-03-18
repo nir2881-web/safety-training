@@ -47,6 +47,9 @@ async function extractDocx(file) {
 }
 
 async function extractPdf(file) {
+  if (file.size > 4 * 1024 * 1024) {
+    throw new Error('קובץ ה-PDF גדול מדי (מעל 4MB). יש לדחוס את הקובץ או לפצל לחלקים קטנים יותר.')
+  }
   // Use Claude's native PDF support via base64 document API
   const buffer = await file.arrayBuffer()
   const bytes = new Uint8Array(buffer)
