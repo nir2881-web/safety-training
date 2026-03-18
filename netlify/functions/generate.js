@@ -19,16 +19,15 @@ export default async (request) => {
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ ...body, stream: true }),
     })
 
-    const data = await response.json()
-
-    return new Response(JSON.stringify(data), {
+    return new Response(response.body, {
       status: response.status,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/event-stream',
         'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-cache',
       },
     })
   } catch (err) {
