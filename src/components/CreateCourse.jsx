@@ -20,6 +20,7 @@ export default function CreateCourse() {
   const [dragOver, setDragOver] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showServerTips, setShowServerTips] = useState(false)
   const [createdCourse, setCreatedCourse] = useState(null)
   const [copied, setCopied] = useState(false)
 
@@ -72,6 +73,7 @@ export default function CreateCourse() {
       setCreatedCourse(course)
     } catch (err) {
       setError(err.message || 'שגיאה ביצירת הלומדה. נסה שוב.')
+      setShowServerTips(!!err.isServerError)
     } finally {
       setLoading(false)
     }
@@ -284,9 +286,18 @@ export default function CreateCourse() {
 
           {/* Error */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 flex gap-2">
-              <span>⚠️</span>
-              <span>{error}</span>
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+              <div className="flex gap-2">
+                <span>⚠️</span>
+                <span>{error}</span>
+              </div>
+              {showServerTips && (
+                <ol className="mt-2 mr-6 list-decimal text-red-500 space-y-1">
+                  <li>נסה שוב — לרוב זה זמני ועובר</li>
+                  <li>אם הבקשה כבדה — שקול קובץ קטן יותר</li>
+                  <li>אם זה קורה בתדירות גבוהה — בדוק את <a href="https://status.anthropic.com" target="_blank" rel="noreferrer" className="underline">סטטוס ה-API</a></li>
+                </ol>
+              )}
             </div>
           )}
 

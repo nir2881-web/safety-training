@@ -124,7 +124,9 @@ export async function generateCourse(apiKey, fileData) {
         continue
       }
       if (e.isRetryable) {
-        throw new Error('שרת Anthropic לא זמין. נסה שוב בעוד מספר שניות.')
+        const finalErr = new Error('שרת Anthropic לא זמין. נסה שוב בעוד מספר שניות.')
+        finalErr.isServerError = true
+        throw finalErr
       }
       throw e
     }
