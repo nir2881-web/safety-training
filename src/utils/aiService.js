@@ -20,7 +20,7 @@ const SYSTEM_PROMPT = `אתה מומחה להכשרות בטיחות בעבוד�
   "passingScore": 5
 }`
 
-const API_URL = 'https://api.anthropic.com/v1/messages'
+const PROXY_URL = '/api/generate'
 const MODEL = 'claude-sonnet-4-6'
 
 export async function generateCourse(apiKey, fileData) {
@@ -55,23 +55,21 @@ export async function generateCourse(apiKey, fileData) {
 
   let response
   try {
-    response = await fetch(API_URL, {
+    response = await fetch(PROXY_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 8192,
-        system: SYSTEM_PROMPT,
-        messages,
+        apiKey,
+        body: {
+          model: MODEL,
+          max_tokens: 8192,
+          system: SYSTEM_PROMPT,
+          messages,
+        },
       }),
     })
   } catch {
-    throw new Error('לא ניתן להתחבר ל-Anthropic API. ודא שאתה מחובר לאינטרנט ושהגישה לאתר api.anthropic.com אינה חסומה.')
+    throw new Error('לא ניתן להתחבר לשרת. ודא שהאתר פעיל ושאתה מחובר לאינטרנט.')
   }
 
   if (!response.ok) {
