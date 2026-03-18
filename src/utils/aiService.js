@@ -12,9 +12,12 @@ const MODEL = 'claude-sonnet-4-6'
 
 async function callApi(apiKey, messages) {
   let response
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
   try {
     response = await fetch(ANTHROPIC_URL, {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
@@ -29,8 +32,15 @@ async function callApi(apiKey, messages) {
         stream: true,
       }),
     })
-  } catch {
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      const err = new Error('הבקשה לקחה יותר מדי זמן (timeout). נסה עם קובץ קטן יותר.')
+      err.isServerError = true
+      throw err
+    }
     throw new Error('לא ניתן להתחבר ל-Anthropic. ודא שאתה מחובר לאינטרנט.')
+  } finally {
+    clearTimeout(timeoutId)
   }
 
   if (!response.ok) {
