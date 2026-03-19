@@ -60,17 +60,18 @@ export default function CreateCourse() {
     try {
       const fileData = await extractText(file)
       setLoadingStep(2)
-      const aiResult = await generateCourse(apiKey.trim(), fileData)
-      setLoadingStep(3)
 
+      // Start file upload in parallel with AI generation to save time
       const courseId = uuidv4()
+      const uploadPromise = (allowDownload && file)
+        ? uploadSourceFile(courseId, file)
+        : Promise.resolve(null)
 
-      let sourceFileUrl = null
-      let sourceFileName = null
-      if (allowDownload && file) {
-        sourceFileUrl = await uploadSourceFile(courseId, file)
-        sourceFileName = file.name
-      }
+      const [aiResult, sourceFileUrl] = await Promise.all([
+        generateCourse(apiKey.trim(), fileData),
+        uploadPromise,
+      ])
+      setLoadingStep(3)
 
       const course = {
         id: courseId,
@@ -81,7 +82,7 @@ export default function CreateCourse() {
         sections: aiResult.sections,
         questions: aiResult.questions,
         passingScore: aiResult.passingScore || Math.ceil(aiResult.questions.length * 0.7),
-        ...(sourceFileUrl && { allowDownload: true, sourceFileUrl, sourceFileName }),
+        ...(sourceFileUrl && { allowDownload: true, sourceFileUrl, sourceFileName: file.name }),
       }
 
       await saveCourse(course)
