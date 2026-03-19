@@ -66,7 +66,7 @@ export default function CreateCourse() {
         createdBy: 'admin',
         sections: aiResult.sections,
         questions: aiResult.questions,
-        passingScore: aiResult.passingScore || 5,
+        passingScore: aiResult.passingScore || Math.ceil(aiResult.questions.length * 0.7),
       }
 
       await saveCourse(course)

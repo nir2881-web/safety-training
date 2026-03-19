@@ -1,11 +1,22 @@
 const SYSTEM_PROMPT = `אתה מומחה להכשרות בטיחות בעבודה.
-המשימה: צור לומדת בטיחות קצרה וממוקדת מהנוהל שקיבלת.
-1. חלק ל-3 עד 4 פרקים קצרים. כל פרק: כותרת + 2-3 משפטים בלבד.
-2. צור 5 שאלות הבנה (4 תשובות, אחת נכונה).
-3. ציון מעבר: 70% (4 מתוך 5).
+המשימה: צור לומדת בטיחות ממוקדת מהנוהל שקיבלת. התאם את הכמויות לאורך המסמך:
+
+1. מספר פרקים — לפי אורך המסמך:
+   • מסמך קצר (עד 2,000 תווים): 3-4 פרקים
+   • מסמך בינוני (2,000–8,000 תווים): 5-7 פרקים
+   • מסמך ארוך (מעל 8,000 תווים): 8-12 פרקים
+   כל פרק: כותרת + 3-5 משפטים.
+
+2. שאלות הבנה — לפי אורך המסמך:
+   • מסמך קצר: 7 שאלות
+   • מסמך בינוני: 8-9 שאלות
+   • מסמך ארוך: 10 שאלות
+   כל שאלה: 4 תשובות, אחת נכונה + הסבר.
+
+3. ציון מעבר: 70% מסך השאלות (עגל כלפי מעלה).
 
 החזר JSON בלבד:
-{"sections":[{"title":"כותרת","content":"תוכן"}],"questions":[{"question":"שאלה","options":["א","ב","ג","ד"],"correct":0,"explanation":"הסבר"}],"passingScore":4}`
+{"sections":[{"title":"כותרת","content":"תוכן"}],"questions":[{"question":"שאלה","options":["א","ב","ג","ד"],"correct":0,"explanation":"הסבר"}],"passingScore":7}`
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages'
 const MODEL = 'claude-sonnet-4-6'
@@ -26,7 +37,7 @@ async function callApi(apiKey, messages) {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 2048,
+        max_tokens: 4096,
         system: SYSTEM_PROMPT,
         messages,
       }),
@@ -74,7 +85,7 @@ export async function generateCourse(apiKey, fileData) {
             type: 'document',
             source: { type: 'base64', media_type: 'application/pdf', data: fileData.base64 },
           },
-          { type: 'text', text: 'צור לומדת בטיחות קצרה מהנוהל הזה.' },
+          { type: 'text', text: 'צור לומדת בטיחות מהנוהל הזה. התאם את מספר הפרקים והשאלות לאורך ולמורכבות המסמך.' },
         ],
       },
     ]
@@ -83,7 +94,7 @@ export async function generateCourse(apiKey, fileData) {
     messages = [
       {
         role: 'user',
-        content: `נוהל הבטיחות:\n\n${text.substring(0, 20000)}\n\nצור לומדת בטיחות קצרה מהנוהל הזה.`,
+        content: `נוהל הבטיחות (אורך: ${text.length.toLocaleString()} תווים):\n\n${text.substring(0, 20000)}\n\nצור לומדת בטיחות מהנוהל הזה. התאם את מספר הפרקים והשאלות לאורך המסמך.`,
       },
     ]
   }
@@ -129,7 +140,7 @@ export async function generateCourse(apiKey, fileData) {
   if (!result.sections || !Array.isArray(result.sections) || result.sections.length === 0) {
     throw new Error('לא נוצרו פרקים. נסה שוב עם קובץ אחר.')
   }
-  if (!result.questions || !Array.isArray(result.questions) || result.questions.length < 3) {
+  if (!result.questions || !Array.isArray(result.questions) || result.questions.length < 5) {
     throw new Error('לא נוצרו שאלות. נסה שוב.')
   }
 
