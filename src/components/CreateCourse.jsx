@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import Header from './Header'
 import { extractText } from '../utils/fileParser'
 import { generateCourse } from '../utils/aiService'
-import { saveCourse, getApiKey, saveApiKey } from '../utils/storage'
+import { saveCourse, getApiKey, saveApiKey, uploadSourceFile } from '../utils/storage'
 
 const ALLOWED_EXTS = ['pdf', 'docx', 'pptx', 'txt']
 
@@ -17,6 +17,7 @@ export default function CreateCourse() {
   const [file, setFile] = useState(null)
   const [courseName, setCourseName] = useState('')
   const [description, setDescription] = useState('')
+  const [allowDownload, setAllowDownload] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -58,8 +59,17 @@ export default function CreateCourse() {
       const fileData = await extractText(file)
       const aiResult = await generateCourse(apiKey.trim(), fileData)
 
+      const courseId = uuidv4()
+
+      let sourceFileUrl = null
+      let sourceFileName = null
+      if (allowDownload && file) {
+        sourceFileUrl = await uploadSourceFile(courseId, file)
+        sourceFileName = file.name
+      }
+
       const course = {
-        id: uuidv4(),
+        id: courseId,
         title: courseName.trim(),
         description: description.trim(),
         createdAt: new Date().toISOString(),
@@ -67,6 +77,7 @@ export default function CreateCourse() {
         sections: aiResult.sections,
         questions: aiResult.questions,
         passingScore: aiResult.passingScore || Math.ceil(aiResult.questions.length * 0.7),
+        ...(sourceFileUrl && { allowDownload: true, sourceFileUrl, sourceFileName }),
       }
 
       await saveCourse(course)
@@ -96,6 +107,7 @@ export default function CreateCourse() {
     setFile(null)
     setCourseName('')
     setDescription('')
+    setAllowDownload(false)
     setError('')
   }
 
@@ -282,6 +294,24 @@ export default function CreateCourse() {
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary resize-none"
             />
             <div className="text-xs text-gray-400 mt-1 text-left">{description.length}/200</div>
+          </div>
+
+          {/* Allow Download */}
+          <div className="mb-6">
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={allowDownload}
+                onChange={e => setAllowDownload(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded accent-primary cursor-pointer flex-shrink-0"
+              />
+              <div>
+                <span className="text-sm font-bold text-dark">אפשר למודרך להוריד את הקובץ המקורי</span>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  בסיום הלומדה תוצג כפתור להורדת הנוהל שממנו נבנתה הלומדה
+                </p>
+              </div>
+            </label>
           </div>
 
           {/* Error */}

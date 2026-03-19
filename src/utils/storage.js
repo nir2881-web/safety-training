@@ -10,7 +10,8 @@ import {
   where,
   orderBy,
 } from 'firebase/firestore'
-import { db } from '../firebase'
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
+import { db, storage } from '../firebase'
 
 const API_KEY_STORE = 'anthropic_api_key'
 
@@ -32,9 +33,23 @@ export async function saveCourse(course) {
 }
 
 export async function deleteCourse(id) {
+  // Delete source file from storage if it exists
+  try {
+    await deleteObject(ref(storage, `courseFiles/${id}`))
+  } catch {
+    // File may not exist, ignore
+  }
   await deleteDoc(doc(db, 'courses', id))
   const snap = await getDocs(query(collection(db, 'completions'), where('courseId', '==', id)))
   await Promise.all(snap.docs.map(d => deleteDoc(d.ref)))
+}
+
+// ── Course Source Files ───────────────────────────────────────────────────────
+
+export async function uploadSourceFile(courseId, file) {
+  const fileRef = ref(storage, `courseFiles/${courseId}`)
+  await uploadBytes(fileRef, file)
+  return getDownloadURL(fileRef)
 }
 
 // ── Completions ──────────────────────────────────────────────────────────────
