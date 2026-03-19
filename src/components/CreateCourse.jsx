@@ -64,7 +64,7 @@ export default function CreateCourse() {
       // Start file upload in parallel with AI generation to save time
       const courseId = uuidv4()
       const uploadPromise = (allowDownload && file)
-        ? uploadSourceFile(courseId, file)
+        ? uploadSourceFile(courseId, file).catch(() => null)
         : Promise.resolve(null)
 
       const [aiResult, sourceFileUrl] = await Promise.all([
@@ -86,6 +86,9 @@ export default function CreateCourse() {
       }
 
       await saveCourse(course)
+      if (allowDownload && !sourceFileUrl) {
+        setError('הלומדה נוצרה בהצלחה, אך לא ניתן היה להעלות את הקובץ המקורי (בדוק הרשאות Firebase Storage).')
+      }
       setCreatedCourse(course)
     } catch (err) {
       setError(err.message || 'שגיאה ביצירת הלומדה. נסה שוב.')
