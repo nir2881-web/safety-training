@@ -20,6 +20,7 @@ export default function CreateCourse() {
   const [allowDownload, setAllowDownload] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [loadingStep, setLoadingStep] = useState(0)
   const [error, setError] = useState('')
   const [showServerTips, setShowServerTips] = useState(false)
   const [createdCourse, setCreatedCourse] = useState(null)
@@ -52,12 +53,15 @@ export default function CreateCourse() {
     if (!courseName.trim()) { setError('אנא הכנס שם ללומדה'); return }
 
     setLoading(true)
+    setLoadingStep(1)
     setError('')
     saveApiKey(apiKey.trim())
 
     try {
       const fileData = await extractText(file)
+      setLoadingStep(2)
       const aiResult = await generateCourse(apiKey.trim(), fileData)
+      setLoadingStep(3)
 
       const courseId = uuidv4()
 
@@ -87,6 +91,7 @@ export default function CreateCourse() {
       setShowServerTips(!!err.isServerError)
     } finally {
       setLoading(false)
+      setLoadingStep(0)
     }
   }
 
@@ -333,10 +338,28 @@ export default function CreateCourse() {
 
           {/* Loading */}
           {loading && (
-            <div className="mb-4 p-5 bg-primary-light border border-primary-200 rounded-xl text-center">
-              <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-3" />
-              <div className="font-bold text-dark">מייצר לומדה, אנא המתן...</div>
-              <div className="text-sm text-gray-500 mt-1">Claude מנתח את הנוהל ויוצר פרקים ושאלות</div>
+            <div className="mb-4 p-5 bg-primary-light border border-primary-200 rounded-xl">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-7 h-7 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+              <div className="space-y-2">
+                {[
+                  { step: 1, label: 'קורא את הקובץ...' },
+                  { step: 2, label: 'Claude מנתח ויוצר את הלומדה...' },
+                  { step: 3, label: 'שומר ומפרסם...' },
+                ].map(({ step, label }) => (
+                  <div key={step} className={`flex items-center gap-2 text-sm transition-all ${loadingStep >= step ? 'text-primary font-bold' : 'text-gray-400'}`}>
+                    {loadingStep > step ? (
+                      <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 ${loadingStep === step ? 'border-primary bg-primary' : 'border-gray-300'}`} />
+                    )}
+                    {label}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

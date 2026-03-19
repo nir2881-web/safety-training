@@ -19,7 +19,7 @@ const SYSTEM_PROMPT = `אתה מומחה להכשרות בטיחות בעבוד�
 {"sections":[{"title":"כותרת","content":"תוכן"}],"questions":[{"question":"שאלה","options":["א","ב","ג","ד"],"correct":0,"explanation":"הסבר"}],"passingScore":7}`
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages'
-const MODEL = 'claude-sonnet-4-6'
+const MODEL = 'claude-haiku-4-5-20251001'
 
 async function callApi(apiKey, messages) {
   let response
@@ -37,7 +37,7 @@ async function callApi(apiKey, messages) {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 4096,
+        max_tokens: 3000,
         system: SYSTEM_PROMPT,
         messages,
       }),
