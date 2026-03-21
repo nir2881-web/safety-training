@@ -73,8 +73,8 @@ async function callApi(apiKey, parts) {
   const data = await response.json()
   // Gemini 2.5+ may return thinking tokens as separate parts (thought: true)
   // We need the actual response part, not the thinking part
-  const parts = data.candidates?.[0]?.content?.parts ?? []
-  const textPart = parts.filter(p => !p.thought).pop()
+  const responseParts = data.candidates?.[0]?.content?.parts ?? []
+  const textPart = responseParts.filter(p => !p.thought).pop()
   return textPart?.text ?? ''
 }
 
