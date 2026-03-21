@@ -61,17 +61,14 @@ export default function CreateCourse() {
       const fileData = await extractText(file)
       setLoadingStep(2)
 
-      // Start file upload in parallel with AI generation to save time
       const courseId = uuidv4()
-      const uploadPromise = (allowDownload && file)
-        ? uploadSourceFile(courseId, file).catch(() => null)
-        : Promise.resolve(null)
-
-      const [aiResult, sourceFileUrl] = await Promise.all([
-        generateCourse(apiKey.trim(), fileData),
-        uploadPromise,
-      ])
+      const aiResult = await generateCourse(apiKey.trim(), fileData)
       setLoadingStep(3)
+
+      let sourceFileUrl = null
+      if (allowDownload && file) {
+        sourceFileUrl = await uploadSourceFile(courseId, file).catch(() => null)
+      }
 
       const course = {
         id: courseId,
