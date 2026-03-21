@@ -38,6 +38,9 @@ async function callApi(apiKey, parts) {
           responseMimeType: 'application/json',
           maxOutputTokens: 4000,
         },
+        thinkingConfig: {
+          thinkingBudget: 0,
+        },
       }),
     })
   } catch (e) {
