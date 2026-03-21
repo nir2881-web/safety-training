@@ -47,8 +47,8 @@ export default function CreateCourse() {
   }
 
   const handleCreate = async () => {
-    if (!apiKey.trim()) { setError('אנא הכנס מפתח API של Anthropic'); return }
-    if (!apiKey.startsWith('sk-')) { setError('המפתח אמור להתחיל ב- sk-'); return }
+    if (!apiKey.trim()) { setError('אנא הכנס מפתח API של Google Gemini'); return }
+    if (!apiKey.startsWith('AIza')) { setError('המפתח אמור להתחיל ב- AIza'); return }
     if (!file) { setError('אנא בחר קובץ להעלאה'); return }
     if (!courseName.trim()) { setError('אנא הכנס שם ללומדה'); return }
 
@@ -191,14 +191,14 @@ export default function CreateCourse() {
           {/* API Key */}
           <div className="mb-6">
             <label className="block text-sm font-bold text-dark mb-1.5">
-              מפתח API של Anthropic
+              מפתח API של Google Gemini
             </label>
             <div className="relative">
               <input
                 type={showKey ? 'text' : 'password'}
                 value={apiKey}
                 onChange={e => setApiKey(e.target.value)}
-                placeholder="sk-ant-api03-..."
+                placeholder="AIzaSy..."
                 className="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary ltr-input"
                 dir="ltr"
               />
@@ -223,12 +223,12 @@ export default function CreateCourse() {
             <p className="text-xs text-gray-400 mt-1">
               קבל מפתח ב-{' '}
               <a
-                href="https://console.anthropic.com"
+                href="https://aistudio.google.com/apikey"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                console.anthropic.com
+                aistudio.google.com
               </a>
               . המפתח נשמר רק במחשב שלך.
             </p>
@@ -334,7 +334,7 @@ export default function CreateCourse() {
                 <ol className="mt-2 mr-6 list-decimal text-red-500 space-y-1">
                   <li>נסה שוב — לרוב זה זמני ועובר</li>
                   <li>אם הבקשה כבדה — שקול קובץ קטן יותר</li>
-                  <li>אם זה קורה בתדירות גבוהה — בדוק את <a href="https://status.anthropic.com" target="_blank" rel="noreferrer" className="underline">סטטוס ה-API</a></li>
+                  <li>אם זה קורה בתדירות גבוהה — בדוק את <a href="https://status.cloud.google.com" target="_blank" rel="noreferrer" className="underline">סטטוס ה-API</a></li>
                 </ol>
               )}
             </div>
@@ -349,7 +349,7 @@ export default function CreateCourse() {
               <div className="space-y-2">
                 {[
                   { step: 1, label: 'קורא את הקובץ...' },
-                  { step: 2, label: 'Claude מנתח ויוצר את הלומדה...' },
+                  { step: 2, label: 'Gemini מנתח ויוצר את הלומדה...' },
                   { step: 3, label: 'שומר ומפרסם...' },
                 ].map(({ step, label }) => (
                   <div key={step} className={`flex items-center gap-2 text-sm transition-all ${loadingStep >= step ? 'text-primary font-bold' : 'text-gray-400'}`}>
