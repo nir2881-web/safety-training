@@ -273,6 +273,47 @@ function StepQuiz({ course, attempt, onSubmit }) {
   )
 }
 
+// ─── Download Button (fetch→blob to bypass cross-origin download restriction) ──
+function DownloadButton({ url, fileName }) {
+  const [downloading, setDownloading] = useState(false)
+
+  const handleDownload = async () => {
+    setDownloading(true)
+    try {
+      const res = await fetch(url)
+      const blob = await res.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = fileName || 'קובץ-מקורי'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(blobUrl)
+    } catch {
+      window.open(url, '_blank')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  return (
+    <button
+      onClick={handleDownload}
+      disabled={downloading}
+      className="flex items-center justify-center gap-2 w-full py-3 border-2 border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors disabled:opacity-60"
+    >
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
+      {downloading ? 'מוריד...' : 'הורד את הנוהל המקורי'}
+      {fileName && !downloading && (
+        <span className="text-xs text-gray-400 font-normal">({fileName})</span>
+      )}
+    </button>
+  )
+}
+
 // ─── Step 4: Result ───────────────────────────────────────────────────────────
 function StepResult({ course, score, attempt, onRetryQuiz, onRetryAll }) {
   const total = (course.questions || []).length
@@ -328,21 +369,7 @@ function StepResult({ course, score, attempt, onRetryQuiz, onRetryAll }) {
 
       {passed && course.allowDownload && course.sourceFileUrl && (
         <div className="mt-4">
-          <a
-            href={course.sourceFileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            download={course.sourceFileName || true}
-            className="flex items-center justify-center gap-2 w-full py-3 border-2 border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            הורד את הנוהל המקורי
-            {course.sourceFileName && (
-              <span className="text-xs text-gray-400 font-normal">({course.sourceFileName})</span>
-            )}
-          </a>
+          <DownloadButton url={course.sourceFileUrl} fileName={course.sourceFileName} />
         </div>
       )}
     </div>
