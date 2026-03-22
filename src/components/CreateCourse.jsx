@@ -24,6 +24,7 @@ export default function CreateCourse() {
   const [error, setError] = useState('')
   const [showServerTips, setShowServerTips] = useState(false)
   const [createdCourse, setCreatedCourse] = useState(null)
+  const [fileUploadFailed, setFileUploadFailed] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const handleFileSelect = selectedFile => {
@@ -67,7 +68,10 @@ export default function CreateCourse() {
 
       let sourceFileUrl = null
       if (allowDownload && file) {
-        sourceFileUrl = await uploadSourceFile(courseId, file).catch(() => null)
+        sourceFileUrl = await uploadSourceFile(courseId, file).catch(e => {
+          console.error('Firebase Storage upload failed:', e)
+          return null
+        })
       }
 
       const course = {
@@ -84,7 +88,7 @@ export default function CreateCourse() {
 
       await saveCourse(course)
       if (allowDownload && !sourceFileUrl) {
-        setError('הלומדה נוצרה בהצלחה, אך לא ניתן היה להעלות את הקובץ המקורי (בדוק הרשאות Firebase Storage).')
+        setFileUploadFailed(true)
       }
       setCreatedCourse(course)
     } catch (err) {
@@ -115,6 +119,7 @@ export default function CreateCourse() {
     setDescription('')
     setAllowDownload(false)
     setError('')
+    setFileUploadFailed(false)
   }
 
   // ── Success Screen ──────────────────────────────────────────────────────────
@@ -131,9 +136,25 @@ export default function CreateCourse() {
             </div>
             <h2 className="text-2xl font-bold text-dark mb-1">הלומדה נוצרה בהצלחה!</h2>
             <p className="text-gray-500 mb-2 text-sm">{createdCourse.title}</p>
-            <p className="text-gray-400 mb-8 text-sm">
+            <p className="text-gray-400 mb-4 text-sm">
               {createdCourse.sections.length} פרקים · {createdCourse.questions.length} שאלות
             </p>
+
+            {fileUploadFailed && (
+              <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl text-sm text-orange-700 text-right">
+                <p className="font-bold mb-1">⚠️ הקובץ המקורי לא הועלה</p>
+                <p className="text-xs text-orange-600">
+                  הלומדה נוצרה בהצלחה, אך לא ניתן היה להעלות את הקובץ להורדה.
+                  כדי לתקן זאת, פתח את Firebase Console ← Storage ← Rules ועדכן לכלל: <code className="bg-orange-100 px-1 rounded">allow read, write: if true;</code>
+                </p>
+              </div>
+            )}
+
+            {createdCourse.allowDownload && createdCourse.sourceFileUrl && (
+              <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 text-right">
+                ✅ הקובץ המקורי הועלה בהצלחה — ימצא כפתור הורדה בסיום הלומדה
+              </div>
+            )}
 
             {/* Link box */}
             <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
