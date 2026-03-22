@@ -37,9 +37,9 @@ async function callApi(apiKey, parts) {
         generationConfig: {
           responseMimeType: 'application/json',
           maxOutputTokens: 4000,
-        },
-        thinkingConfig: {
-          thinkingBudget: 0,
+          thinkingConfig: {
+            thinkingBudget: 0,
+          },
         },
       }),
     })
